@@ -10,6 +10,54 @@
 
 #include <JuceHeader.h>
 
+struct Widget : public Component
+{
+    
+    Widget( int i ) : num(i) {}
+    
+    int num = 0;
+    
+    void paint( Graphics& g ) override
+    {
+        g.fillAll( Colours::white );
+        g.setColour( Colours::black );
+        g.drawRect( getLocalBounds().reduced(2) );
+        
+        g.drawFittedText( String(num),
+                          getLocalBounds(),
+                          Justification::centred,
+                         1 );
+    }
+};
+
+struct OwnedArrayComponent : Component
+{
+    OwnedArrayComponent()
+    {
+        for( int i = 0; i < 10; i++ )
+        {
+            auto* widget = widgets.add( new Widget(i) );
+            addAndMakeVisible(widget);
+        }
+    }
+    
+    void resized() override
+    {
+        auto width = getWidth() / static_cast<float>( widgets.size() );
+        auto height = getHeight();
+        
+        int x = 0;
+        
+        for ( auto* widget : widgets )
+        {
+            widget->setBounds( x, 0, width, height );
+            x += width;
+        }
+    }
+    
+    OwnedArray<Widget> widgets;
+};
+
 struct MyComp : Component
 {
     
@@ -67,6 +115,7 @@ private:
     //==============================================================================
     // Your private member variables go here...
     MyComp comp;
+    OwnedArrayComponent ownedArrayComp;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

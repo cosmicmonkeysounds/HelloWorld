@@ -8,10 +8,13 @@
 
 #include "MainComponent.h"
 
+
 //==============================================================================
 MainComponent::MainComponent()
 {
     addAndMakeVisible(comp);
+    
+    addAndMakeVisible(ownedArrayComp);
     
     // if the child has children you want to listen to, use true.
     comp.addMouseListener(this, false);
@@ -41,4 +44,5 @@ void MainComponent::resized()
     // update their positions.
     
     comp.setBounds( 30, 30, 100, 100 );
+    ownedArrayComp.setBounds( comp.getX(), comp.getBottom(), getWidth() - comp.getX(), getHeight() - comp.getBottom() );
 }
