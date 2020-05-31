@@ -8,6 +8,54 @@
 
 #include "MainComponent.h"
 
+OwnedArrayComponent::OwnedArrayComponent()
+{
+    for( int i = 0; i < 10; i++ )
+    {
+        auto* widget = buttons.add( new TextButton(String(i)) );
+        addAndMakeVisible(widget);
+        widget->addListener(this);
+    }
+}
+
+OwnedArrayComponent::~OwnedArrayComponent()
+{
+    for( auto* btn : buttons )
+    {
+        btn->removeListener(this);
+    }
+}
+
+void OwnedArrayComponent::resized()
+{
+    auto width = getWidth() / static_cast<float>( buttons.size() );
+    auto height = getHeight();
+    
+    int x = 0;
+    
+    for ( auto* widget : buttons )
+    {
+        widget->setBounds( x, 0, width, height );
+        x += width;
+    }
+}
+
+void OwnedArrayComponent::buttonClicked( Button* clickedButton )
+{
+    if( clickedButton == buttons.getFirst() )
+    {
+        DBG( "First btn clicked" );
+    }
+    else if( clickedButton == buttons.getLast() )
+    {
+        DBG( "Last btn clicked" );
+    }
+    else
+    {
+        DBG( "Clicked some other btn" );
+    }
+}
+
 
 //==============================================================================
 MainComponent::MainComponent()
@@ -18,6 +66,8 @@ MainComponent::MainComponent()
     
     // if the child has children you want to listen to, use true.
     comp.addMouseListener(this, false);
+    ownedArrayComp.addMouseListener(this, true);
+    
     setSize (600, 400);
 }
 

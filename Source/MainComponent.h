@@ -30,32 +30,13 @@ struct Widget : public Component
     }
 };
 
-struct OwnedArrayComponent : Component
+struct OwnedArrayComponent : Component, Button::Listener
 {
-    OwnedArrayComponent()
-    {
-        for( int i = 0; i < 10; i++ )
-        {
-            auto* widget = widgets.add( new Widget(i) );
-            addAndMakeVisible(widget);
-        }
-    }
-    
-    void resized() override
-    {
-        auto width = getWidth() / static_cast<float>( widgets.size() );
-        auto height = getHeight();
-        
-        int x = 0;
-        
-        for ( auto* widget : widgets )
-        {
-            widget->setBounds( x, 0, width, height );
-            x += width;
-        }
-    }
-    
-    OwnedArray<Widget> widgets;
+    OwnedArrayComponent();
+    ~OwnedArrayComponent();
+    void resized() override;
+    void buttonClicked( Button* ) override;
+    OwnedArray<TextButton> buttons;
 };
 
 struct MyComp : Component
@@ -103,12 +84,17 @@ public:
     
     void mouseEnter( const MouseEvent& e ) override
     {
-        DBG( "Main Component mouseEnter()" );
+        //DBG( "Main Component mouseEnter()" );
     }
     
     void mouseExit( const MouseEvent& e ) override
     {
-        DBG( " Main Component mouseExit()" );
+        //DBG( " Main Component mouseExit()" );
+    }
+    
+    void mouseDown( const MouseEvent& e ) override
+    {
+        DBG( "Click click" );
     }
 
 private:
