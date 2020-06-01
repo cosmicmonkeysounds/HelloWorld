@@ -10,6 +10,13 @@
 
 #include <JuceHeader.h>
 
+struct DualButton : public Component
+{
+    TextButton btn1{"btn1"}, btn2{"btn2"};
+    DualButton();
+    void resized() override;
+};
+
 struct Widget : public Component
 {
     
@@ -102,6 +109,7 @@ private:
     // Your private member variables go here...
     MyComp comp;
     OwnedArrayComponent ownedArrayComp;
+    DualButton dualButton;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
