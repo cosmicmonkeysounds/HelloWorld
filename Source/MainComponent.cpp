@@ -13,16 +13,28 @@ DualButton::DualButton()
     addAndMakeVisible(btn1);
     addAndMakeVisible(btn2);
     
-    btn1.onClick = [this]()
-    {
-        DBG( "This is btn1's size: " << this->btn1.getBounds().toString() );
-    };
+//    btn1.onClick = [this]()
+//    {
+//        DBG( "This is btn1's size: " << this->btn1.getBounds().toString() );
+//        timerThing.stopTimer();
+//
+//    };
+//
+//    btn2.onClick = [this]()
+//    {
+//        DBG( "This is btn2's size: " << this->btn2.getBounds().toString() );
+//        timerThing.startTimerHz(2);
+//    };
     
-    btn2.onClick = [this]()
-    {
-        DBG( "This is btn2's size: " << this->btn2.getBounds().toString() );
-    };
-    
+}
+
+void DualButton::setBtn1Handler( std::function<void()> func )
+{
+    btn1.onClick = std::move(func);
+}
+void DualButton::setBtn2Handler( std::function<void()> func )
+{
+    btn2.onClick = std::move(func);
 }
 
 void DualButton::resized()
@@ -85,16 +97,23 @@ void OwnedArrayComponent::buttonClicked( Button* clickedButton )
 MainComponent::MainComponent()
 {
     addAndMakeVisible(comp);
-    
     addAndMakeVisible(ownedArrayComp);
-    
     addAndMakeVisible(dualButton);
-    
     addAndMakeVisible(repeating);
     
     // if the child has children you want to listen to, use true.
     comp.addMouseListener(this, false);
     ownedArrayComp.addMouseListener(this, true);
+    
+    dualButton.setBtn1Handler( [this]()
+    {
+        repeating.startTimer(300);
+    });
+    
+    dualButton.setBtn2Handler( [this]()
+    {
+        repeating.stopTimer();
+    });
     
     setSize (600, 400);
 }
