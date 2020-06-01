@@ -90,6 +90,8 @@ MainComponent::MainComponent()
     
     addAndMakeVisible(dualButton);
     
+    addAndMakeVisible(repeating);
+    
     // if the child has children you want to listen to, use true.
     comp.addMouseListener(this, false);
     ownedArrayComp.addMouseListener(this, true);
@@ -129,4 +131,7 @@ void MainComponent::resized()
     
     dualButton.setBounds( comp.getBounds()
                           .withX(comp.getRight() + 5) );
+    
+    repeating.setBounds( dualButton.getBounds()
+                        .withX(dualButton.getRight() + 5) );
 }
