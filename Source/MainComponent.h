@@ -10,7 +10,58 @@
 
 #include <JuceHeader.h>
 
-struct RepeatingThing;
+struct MyAsync : Component, AsyncUpdater, HighResolutionTimer
+{
+    void handleAsyncUpdate() override
+    {
+        paintColour = (paintColour + 1) % maxColours;
+        repaint();
+    }
+    
+    void hiResTimerCallback() override
+    {
+        triggerAsyncUpdate();
+    }
+    
+    void paint( Graphics& g ) override
+    {
+        switch( paintColour )
+        {
+            case 0:
+                g.setColour(Colours::red);
+                break;
+                
+            case 1:
+                g.setColour(Colours::blue);
+                break;
+                
+            case 2:
+                g.setColour(Colours::black);
+                break;
+                
+            case 3:
+                g.setColour(Colours::brown);
+                break;
+        }
+        
+        g.fillAll();
+    }
+    
+    MyAsync()
+    {
+        startTimer( 200 );
+    }
+    
+    ~MyAsync()
+    {
+        stopTimer();
+        cancelPendingUpdate();
+    }
+    
+private:
+    int paintColour = 0;
+    const int maxColours {5};
+};
 
 struct DualButton : public Component
 {
@@ -144,6 +195,7 @@ private:
     OwnedArrayComponent ownedArrayComp;
     RepeatingThing repeating;
     DualButton dualButton;
+    MyAsync hiResAsync;
     
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)

@@ -100,6 +100,7 @@ MainComponent::MainComponent()
     addAndMakeVisible(ownedArrayComp);
     addAndMakeVisible(dualButton);
     addAndMakeVisible(repeating);
+    addAndMakeVisible(hiResAsync);
     
     // if the child has children you want to listen to, use true.
     comp.addMouseListener(this, false);
@@ -153,4 +154,7 @@ void MainComponent::resized()
     
     repeating.setBounds( dualButton.getBounds()
                         .withX(dualButton.getRight() + 5) );
+    
+    hiResAsync.setBounds( repeating.getBounds()
+                          .withX(repeating.getRight() + 5) );
 }
