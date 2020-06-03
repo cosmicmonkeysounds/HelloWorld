@@ -10,6 +10,158 @@
 
 #include <JuceHeader.h>
 
+struct MyThread : Thread
+{
+    MyThread() : Thread("MyThread")
+    {
+        // when this is started, run() is called
+        // you can supply a priority argument
+        startThread();
+    }
+    
+    ~MyThread()
+    {
+        // this changes a flag to make threadShouldExit() return true.
+        // if you don't kill the thread manually, the OS will after this many milliseconds.
+        stopThread(100);
+    }
+    
+    // called once, every time the thread is started
+    void run() override
+    {
+        
+        while( true )
+        {
+            if( threadShouldExit() )
+                break;
+            
+            // do some stuff
+            
+            if( threadShouldExit() )
+                break;
+            
+            // more stuff!!
+            
+            if( threadShouldExit() )
+                break;
+            
+            // even more stuff!
+            
+            // if we have a long process block, it's probably worth while to check back on your thread like this.
+            
+            // break your tasks into smaller tasks
+            
+            wait(10);
+            // or
+            
+            // this freezes the thread until somebody calls notify()
+            wait(-1);
+            
+        }
+    }
+};
+
+// to create this object AFTER a component to set size properly
+struct BackgroundThread : Thread
+{
+    
+    BackgroundThread( int _w, int _h );
+    
+    ~BackgroundThread();
+    
+    void run() override;
+    
+    void setUpdateRenderer( std::function<void(Image&&)> func );
+    
+private:
+    int w{0}, h{0};
+    Random r;
+    std::function<void(Image&&)> updateRenderer;
+    
+};
+
+struct LambdaTimer : Timer
+{
+    LambdaTimer( int ms, std::function<void()> func ) : lambda( std::move(func) )
+    {
+        DBG("Lambda CTOR");
+        startTimer(ms);
+    }
+    
+    ~LambdaTimer()
+    {
+        stopTimer();
+    }
+    
+    void timerCallback() override
+    {
+        stopTimer();
+        if( lambda )
+            DBG("executing callback");
+            lambda();
+    }
+
+    std::function<void()> lambda;
+};
+
+#include <array>
+struct Renderer : Component, AsyncUpdater
+{
+    Renderer()
+    {
+        
+        DBG( "Renderer CTOR" );
+        lambdaTimer = std::make_unique<LambdaTimer>( 10, [this]()
+        {
+            processingThread = std::make_unique<BackgroundThread>( getWidth(), getHeight() );
+            
+            DBG("Before setting processing thread");
+            
+            processingThread->setUpdateRenderer( [this](Image&& image)
+            {
+                int renderIndex = firstImage ? 0 : 1;
+                firstImage = !firstImage;
+                imageToRender[renderIndex] = std::move(image);
+                
+                DBG( "Before triggerAsync()" );
+                
+                triggerAsyncUpdate();
+                
+                lambdaTimer = std::make_unique<LambdaTimer>( 1000, [this]()
+                {
+                    processingThread->notify();
+                });
+            });
+            
+        });
+    }
+    
+    ~Renderer()
+    {
+        processingThread.reset();
+        lambdaTimer.reset();
+    }
+    
+    void paint( Graphics& g ) override
+    {
+        DBG( "Renderer::Paint" );
+        g.drawImage(firstImage ? imageToRender[1] : imageToRender[0], getLocalBounds().toFloat() );
+    }
+    
+    void handleAsyncUpdate() override
+    {
+        DBG( "Repainting" );
+        repaint();
+    }
+    
+private:
+    std::unique_ptr<BackgroundThread> processingThread;
+    std::unique_ptr<LambdaTimer> lambdaTimer;
+    bool firstImage = true;
+    std::array<Image, 2> imageToRender;
+    
+};
+
 struct MyAsync : Component, AsyncUpdater, HighResolutionTimer
 {
     void handleAsyncUpdate() override
@@ -196,6 +348,7 @@ private:
     RepeatingThing repeating;
     DualButton dualButton;
     MyAsync hiResAsync;
+    Renderer renderer;
     
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)

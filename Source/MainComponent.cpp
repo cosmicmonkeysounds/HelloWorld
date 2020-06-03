@@ -8,6 +8,71 @@
 
 #include "MainComponent.h"
 
+
+BackgroundThread::BackgroundThread( int _w, int _h ) : Thread("BackgroundThread"), w(_w), h(_h)
+{
+    DBG( "Thread CTOR" );
+    startThread();
+}
+
+BackgroundThread::~BackgroundThread()
+{
+    stopThread(500);
+}
+
+void BackgroundThread::run()
+{
+    while( true )
+    {
+        if( threadShouldExit() )
+            break;
+        
+        auto canvas = Image( Image::PixelFormat::RGB, w, h, true );
+        
+        if( threadShouldExit() )
+            break;
+        
+        
+        
+        bool shouldBail = false;
+        for( int x = 0; x < w; ++x )
+        {
+            
+            if( threadShouldExit() )
+            {
+                shouldBail = true;
+                break;
+            }
+            for( int y = 0; y < h; ++y )
+            {
+                canvas.setPixelAt( x, y, Colour(r.nextFloat(),
+                                                r.nextFloat(),
+                                                r.nextFloat(),
+                                                1.f) );
+            }
+        }
+        
+        DBG( "In background thread" );
+        
+        // more stuff!!
+        
+        if( threadShouldExit() || shouldBail )
+            break;
+        
+        if( updateRenderer )
+            updateRenderer( std::move(canvas) );
+        
+        wait(-1);
+        
+    }
+}
+
+void BackgroundThread::setUpdateRenderer( std::function<void(Image&&)> func )
+{
+    updateRenderer = std::move( func );
+    DBG("Setting renderer");
+}
+
 DualButton::DualButton()
 {
     addAndMakeVisible(btn1);
@@ -101,6 +166,7 @@ MainComponent::MainComponent()
     addAndMakeVisible(dualButton);
     addAndMakeVisible(repeating);
     addAndMakeVisible(hiResAsync);
+
     
     // if the child has children you want to listen to, use true.
     comp.addMouseListener(this, false);
@@ -117,6 +183,8 @@ MainComponent::MainComponent()
     });
     
     setSize (600, 400);
+    
+    addAndMakeVisible(renderer);
 }
 
 MainComponent::~MainComponent()
@@ -147,8 +215,6 @@ void MainComponent::resized()
                               getWidth() - comp.getX(),
                               getHeight() - comp.getBottom() );
     
-    //dualButton.setBounds( comp.getRight(), comp.getY(), comp.getWidth(), comp.getHeight() );
-    
     dualButton.setBounds( comp.getBounds()
                           .withX(comp.getRight() + 5) );
     
@@ -157,4 +223,7 @@ void MainComponent::resized()
     
     hiResAsync.setBounds( repeating.getBounds()
                           .withX(repeating.getRight() + 5) );
+    
+    renderer.setBounds( hiResAsync.getBounds()
+                        .withX(hiResAsync.getRight() + 5) );
 }
