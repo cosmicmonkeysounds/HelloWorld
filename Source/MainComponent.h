@@ -9,6 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "DataRace.h"
 
 struct MyThread : Thread
 {
@@ -349,6 +350,7 @@ private:
     DualButton dualButton;
     MyAsync hiResAsync;
     Renderer renderer;
+    Test test;
     
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
